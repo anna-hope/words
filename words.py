@@ -44,7 +44,7 @@ def add_word(word):
     if 'ё' in word:
         word.replace('ё', 'е')
 
-    words = get_words
+    words = get_words()
     words.append(word)
     words.sort()
     file = open('words_{}'.format(args.lang), 'wb')
