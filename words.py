@@ -100,7 +100,7 @@ def call_bluff(sequence, letter='', player='player'):
         if args.dev:
             print('Am I missing an actual word? I am going to blindly trust you here')
             answer = input('\n')
-            if answer == 'y':
+            if answer == 'y' or answer == 'yes':
                 word = input('Tell me that word, please\n')
                 if len(word) >= 4:
                     print("Thanks, I'll make sure to remember it.")
@@ -162,7 +162,9 @@ def play(comp_first, lang='en'):
                 if not bluff:
                     cur_player = 'computer'
                 break
-                
+            else:
+                # this is to make sure that no one attempts to enter a bunch of letters at once
+                letter = letter[0]
             valid, words = check_letter(sequence, letter, words)
             if valid:
                 complete = is_complete(sequence, words)
@@ -183,6 +185,10 @@ def play(comp_first, lang='en'):
 def main():
     print('word game --- if you think the computer is making stuff up (and it can), enter bluff to check')
     comp_first = computer_first()
+    if comp_first:
+        print('I start')
+    else:
+        print('Enter a letter')
     play(comp_first, args.lang)
 
 if __name__ == '__main__':
