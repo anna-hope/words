@@ -5,6 +5,7 @@
 
 import sys, pprint, argparse
 import simplejson as json
+from get_freqs import get_frequencies
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('fn', type=str, help='Word file to analyse')
@@ -27,7 +28,8 @@ def main():
                 sequences.append(sequence)
     
     print('Got sequences...')
-    seqs_frequencies = {seq: (sequences.count(seq) / len(sequences)) for seq in set(sequences)}
+    # seqs_frequencies = {seq: (sequences.count(seq) / len(sequences)) for seq in set(sequences)}
+    seqs_frequencies = get_frequencies(sequences)
     print('Got the frequency of sequences...')
     
     # dump them into a JSON file
