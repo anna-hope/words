@@ -155,11 +155,14 @@ def play(comp_first, lang='en'):
             cur_player = 'player'
         else:
             letter = input('\n').casefold()
-            if letter == 'bluff' or letter == 'блеф':
+            if letter == '':
+                continue
+            elif letter == 'bluff' or letter == 'блеф':
                 bluff = call_bluff(sequence, player='computer')
                 if not bluff:
                     cur_player = 'computer'
                 break
+                
             valid, words = check_letter(sequence, letter, words)
             if valid:
                 complete = is_complete(sequence, words)
