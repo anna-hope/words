@@ -167,10 +167,10 @@ def play(comp_first, lang='en'):
                 letter = letter[0]
             valid, words = check_letter(sequence, letter, words)
             if valid:
+                sequence += letter
                 complete = is_complete(sequence, words)
                 if complete:
                     break
-                sequence += letter
                 cur_player = 'computer'
             else:
                 if call_bluff(sequence, letter):
