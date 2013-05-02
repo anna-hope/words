@@ -17,7 +17,7 @@ args = argparser.parse_args()
 def lie(sequence, words=None, lang=args.lang):
     chunk = sequence[-2:]
     sequences = json.load(open('seq_{}.json'.format(lang)))
-    matches = {x: sequences[x] for x in sequences if x[:len(chunk)] == chunk and '-' not in sequences[x]}
+    matches = {x: sequences[x] for x in sequences if x[:len(chunk)] == chunk and '-' not in x}
     if matches == {}:
         return None
 
