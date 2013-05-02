@@ -15,15 +15,18 @@ argparser.add_argument('-d', '--dev', action='store_true', default=False, help='
 args = argparser.parse_args()
 
 def lie(sequence, words=None, lang=args.lang):
-    chunk = sequence[-2:]
-    sequences = json.load(open('seq_{}.json'.format(lang)))
+    seq_length = 4
+    # get the last n (seq_length - 1) letters of the sequence, so that we can find the optimal letter to guess
+    chunk = sequence[-(seq_length - 1):] 
+    sequences = json.load(open('seq_{lang}_{seq_length}.json'.format(lang=lang, seq_length=seq_length)))
     matches = {x: sequences[x] for x in sequences if x[:len(chunk)] == chunk and '-' not in x}
+    
     if matches == {}:
         return None
 
     best_match = sorted(matches.items(), key=lambda x: x[1], reverse=True)[0]
-    if len(sequence) >= 2:
-        letter = best_match[0][2]
+    if len(sequence) >= (seq_length - 1):
+        letter = best_match[0][seq_length - 1]
     else:
         letter = best_match[0][len(sequence)]
     return letter
@@ -62,10 +65,12 @@ def get_letter(sequence, words):
     matches = [word for word in words if word.startswith(sequence)]
     # but that would be too boring, wouldn't you say?
     # so let's add some randomness
-    random_matches = [word for word in matches if random.random() > random.random() or random.random() < random.random()] # around 0.25 words will be thrown away like this
+    # random_matches = [word for word in matches if random.random() > random.random() or random.random() < random.random()] # around 0.25 words will be thrown away like this
+    random_matches = [word for word in matches if random.random() > random.random()]
     if random_matches == []:
         return (None, None)
-    match = sorted(random_matches, key=len, reverse=True)[0]
+    sorted_matches = sorted(random_matches, key=len, reverse=True)
+    match = sorted_matches[0]
     try:
         letter = match[len(sequence)]
     except IndexError:
@@ -88,7 +93,7 @@ def is_complete(sequence, words):
     except IndexError:
         return False
     else:
-        if len(sequence) >= 6:
+        if len(sequence) >= 5:
             return True
         else:
             return False
