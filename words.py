@@ -118,11 +118,11 @@ def call_bluff(sequence, letter='', player='player'):
         else:
             print('Tell me the word you\'re thinking of')
             word = input()
-            sequence = word[:(len(word)-1)]
+            new_sequence = word[:(len(word)-1)]
             letter = word[len(word)-1]
-            valid = check_letter(sequence, letter, words)[0]
-            if not valid:
-                print('No, I don\'t think that word exists')
+            valid = check_letter(new_sequence, letter, words)[0]
+            if not valid or word[:len(sequence)] != sequence:
+                print('No, I don\'t think so')
                 return False
             else:
                 print('Oh, didn\'t think of that one...')
@@ -178,7 +178,7 @@ def play(comp_first, lang='en'):
         print('I win.')
 
 def main():
-    print('word game --- if you think the computer is making stuff up (and it can), enter bluff to check\n')
+    print('word game --- if you think the computer is making stuff up (and it can), enter bluff to check')
     comp_first = computer_first()
     play(comp_first, args.lang)
 
