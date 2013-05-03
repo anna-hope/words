@@ -9,13 +9,8 @@ try:
 except ImportError:
     import json
 
-argparser = argparse.ArgumentParser()
-argparser.add_argument('-l', '--lang', type=str, default='en', choices=['en', 'ru'], help='language')
-argparser.add_argument('-d', '--dev', action='store_true', default=False, help='dev mode')
-args = argparser.parse_args()
 
-def lie(sequence, words=None, lang=args.lang):
-    seq_length = 4
+def lie(sequence, words=None, seq_length=4, lang='en'):
     # get the last n (seq_length - 1) letters of the sequence, so that we can find the optimal letter to guess
     chunk = sequence[-(seq_length - 1):] 
     sequences = json.load(open('seq_{lang}_{seq_length}.json'.format(lang=lang, seq_length=seq_length)))
@@ -32,7 +27,7 @@ def lie(sequence, words=None, lang=args.lang):
     return letter
 
 
-def get_words(lang=args.lang):
+def get_words(lang='en'):
     try:
         wordsfile = pickle.load(open('words_{}'.format(lang), 'rb'))
     except FileNotFoundError:
@@ -99,7 +94,7 @@ def is_complete(sequence, words):
             return False
 
 def call_bluff(sequence, letter='', player='player'):
-    words = get_words()
+    words = get_words(args.lang)
     matches = [word for word in words if word.startswith(sequence + letter)]
     if player == 'player':
         if args.dev:
@@ -142,7 +137,7 @@ def call_bluff(sequence, letter='', player='player'):
             return True
 
 def play(comp_first, lang='en'):
-    words = get_words()
+    words = get_words(lang)
     sequence = ''
     cur_player = 'computer' if comp_first else 'player'
     
@@ -150,8 +145,8 @@ def play(comp_first, lang='en'):
         if cur_player == 'computer':
             letter, words = get_letter(sequence, words)
             if letter is None:
-                letter = lie(sequence)
-                words = get_words()
+                letter = lie(sequence, lang=lang)
+                words = get_words(lang)
             assert words is not None
             sequence += letter
             print(letter, end='')
@@ -197,4 +192,9 @@ def main():
     play(comp_first, args.lang)
 
 if __name__ == '__main__':
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument('-l', '--lang', type=str, default='en', choices=['en', 'ru'], help='language')
+    argparser.add_argument('-d', '--dev', action='store_true', default=False, help='dev mode')
+    args = argparser.parse_args()
+
     main()
