@@ -2,20 +2,22 @@
 
 import random, argparse
 from words import lie
+try:
+	import simplejson as json
+except ImportError:
+	import json
 
-
-
-def make_up(seq='', lang='en'):
-	for i in range(random.randrange(6, 12)):
-		letter = lie(seq, lang=lang)
+def make_up(lang_data, seq=''):
+	for i in range((12 - len(seq))):
+		letter = lie(seq, lang_data)
 		if letter is None:
 			break
 		seq += letter
 	return seq
-		
 
 def main():
-	print(make_up(args.sequence, args.lang))
+	lang_data = json.load(open('{}.json'.format(args.lang)))
+	print(make_up(lang_data, args.sequence))
 
 if __name__ == '__main__':
 	ap = argparse.ArgumentParser()

@@ -3,23 +3,30 @@
 # (c) Anton Osten
 # 
 
-import sys, random, argparse, pickle
+import sys, random, argparse
 try:
     import simplejson as json
 except ImportError:
     import json
 
+def load_lang_data(lang):
+    try:
+       lang_data = json.load(open('{}.json'.format(lang))) 
+    except FileNotFoundError:
+        sys.exit('Language data not found. Quitting...')
+    return lang_data
 
-def lie(sequence, words=None, seq_length=4, lang='en'):
+def lie(sequence, lang_data, words=None, seq_length=4, lang='en'):
     # get the last n (seq_length - 1) letters of the sequence, so that we can find the optimal letter to guess
     chunk = sequence[-(seq_length - 1):] 
-    sequences = json.load(open('seq_{lang}_{seq_length}.json'.format(lang=lang, seq_length=seq_length)))
+    sequences = lang_data['sequences'][str(seq_length)]
     matches = {x: sequences[x] for x in sequences if x[:len(chunk)] == chunk and '-' not in x}
     
     if matches == {}:
         return None
 
     best_match = sorted(matches.items(), key=lambda x: x[1], reverse=True)[0]
+    
     if len(sequence) >= (seq_length - 1):
         letter = best_match[0][seq_length - 1]
     else:
@@ -27,13 +34,10 @@ def lie(sequence, words=None, seq_length=4, lang='en'):
     return letter
 
 
-def get_words(lang='en'):
-    try:
-        wordsfile = pickle.load(open('words_{}'.format(lang), 'rb'))
-    except FileNotFoundError:
-        sys.exit('Dictionary file not found. Quitting...')
-   
-    words = [word for word in wordsfile if len(word.strip()) >= 4 and '-' not in word]
+def get_words(lang_data):
+    '''Returns words from language data'''
+    # words = [word for word in wordsfile['words'] if len(word.strip()) >= 4 and '-' not in word]
+    words = [word for word in lang_data['words'] if '-' not in word]
     return words
 
 def add_word(word):
@@ -41,12 +45,16 @@ def add_word(word):
     # don't want random yos messing up our dictionary
     if 'ё' in word:
         word.replace('ё', 'е')
-
-    words = get_words()
+    
+    # get the language data and add the word to it
+    lang_data = load_lang_data(args.lang)
+    words = get_words(lang_data)
     words.append(word)
     words.sort()
-    file = open('words_{}'.format(args.lang), 'wb')
-    pickle.dump(words, file)
+    lang_data['words'] = words
+    # dump the file
+    file = open('{}.json'.format(args.lang), 'w')
+    json.dump(lang_data, file)
     file.close()
 
 def computer_first():
@@ -55,13 +63,15 @@ def computer_first():
     else:
         return False
 
-def get_letter(sequence, words):
+def pick_letter(sequence, words):
+    '''Picks an optimal letter according to the given sequence'''
     # we could just get matches
     matches = [word for word in words if word.startswith(sequence)]
     # but that would be too boring, wouldn't you say?
     # so let's add some randomness
-    # random_matches = [word for word in matches if random.random() > random.random() or random.random() < random.random()] # around 0.25 words will be thrown away like this
-    random_matches = [word for word in matches if random.random() > random.random()]
+    random_matches = [word for word in matches if random.random() > random.random() or random.random() < random.random()] # around 0.25 words will be thrown away like this
+    # random_matches = [word for word in matches if random.random() > random.random()]
+    # random_matches = matches
     if random_matches == []:
         return (None, None)
     sorted_matches = sorted(random_matches, key=len, reverse=True)
@@ -88,13 +98,9 @@ def is_complete(sequence, words):
     except IndexError:
         return False
     else:
-        if len(sequence) >= 5:
-            return True
-        else:
-            return False
+        return True
 
-def call_bluff(sequence, letter='', player='player'):
-    words = get_words(args.lang)
+def call_bluff(sequence, words, letter='', player='player'):
     matches = [word for word in words if word.startswith(sequence + letter)]
     if player == 'player':
         if args.dev:
@@ -112,7 +118,7 @@ def call_bluff(sequence, letter='', player='player'):
                 print('Okay then')
                 return False
         print('I\'m calling your bluff, dear.')
-        if matches == [] and random.random() > 0.5:
+        if matches == []:
             print('I am positive that there is no word with that sequence of letters in common usage. And trust me, I know a lot of words.')
             return False
         else:
@@ -136,21 +142,26 @@ def call_bluff(sequence, letter='', player='player'):
             print(matches[0])
             return True
 
-def play(comp_first, lang='en'):
-    words = get_words(lang)
+def play(comp_first, lang_data):
+    all_words = get_words(lang_data)
+    cur_words = all_words
     sequence = ''
     cur_player = 'computer' if comp_first else 'player'
     
     while True:
         if cur_player == 'computer':
-            letter, words = get_letter(sequence, words)
-            if letter is None:
-                letter = lie(sequence, lang=lang)
-                words = get_words(lang)
-            assert words is not None
+            # if it's first turn, we want the computer to pick a random letter, no thinking
+            if sequence == '':
+                letter = random.choice(lang_data['letters'])
+            else:
+                letter, cur_words = pick_letter(sequence, cur_words)
+                if letter is None:
+                    letter = lie(sequence, lang_data)
+                    cur_words = all_words
+           # assert words is not None
             sequence += letter
             print(letter, end='')
-            if is_complete(sequence, words):
+            if is_complete(sequence, cur_words):
                 break
             cur_player = 'player'
         else:
@@ -158,17 +169,17 @@ def play(comp_first, lang='en'):
             if letter == '':
                 continue
             elif letter == 'bluff' or letter == 'блеф':
-                bluff = call_bluff(sequence, player='computer')
+                bluff = call_bluff(sequence, all_words, player='computer')
                 if not bluff:
                     cur_player = 'computer'
                 break
             else:
                 # this is to make sure that no one attempts to enter a bunch of letters at once
                 letter = letter[0]
-            valid, words = check_letter(sequence, letter, words)
+            valid, words = check_letter(sequence, letter, cur_words)
             if valid:
                 sequence += letter
-                complete = is_complete(sequence, words)
+                complete = is_complete(sequence, cur_words)
                 if complete:
                     break
                 cur_player = 'computer'
@@ -183,13 +194,17 @@ def play(comp_first, lang='en'):
         print('I win.')
 
 def main():
+    lang_data = load_lang_data(args.lang)
+    
     print('word game --- if you think the computer is making stuff up (and it can), enter bluff to check')
     comp_first = computer_first()
+    
     if comp_first:
         print('I start')
     else:
         print('Enter a letter')
-    play(comp_first, args.lang)
+        
+    play(comp_first, lang_data)
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
