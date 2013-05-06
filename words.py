@@ -36,8 +36,8 @@ def lie(sequence, lang_data, words=None, seq_length=4, lang='en'):
 
 def get_words(lang_data):
     '''Returns words from language data'''
-    # words = [word for word in wordsfile['words'] if len(word.strip()) >= 4 and '-' not in word]
-    words = [word for word in lang_data['words'] if '-' not in word]
+    words = [word for word in lang_data['words'] if len(word.strip()) >= 4 and '-' not in word]
+    # words = [word for word in lang_data['words'] if '-' not in word]
     return words
 
 def add_word(word):
@@ -225,7 +225,7 @@ def main():
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('-l', '--lang', type=str, default='en', choices=['en', 'ru'], help='language')
+    argparser.add_argument('-l', '--lang', type=str, default='en', choices=['en', 'ru', 'de'], help='language')
     argparser.add_argument('-d', '--dev', action='store_true', default=False, help='dev mode')
     args = argparser.parse_args()
 
