@@ -22,6 +22,6 @@ def main():
 if __name__ == '__main__':
 	ap = argparse.ArgumentParser()
 	ap.add_argument('sequence', type=str, help='sequence to begin building a word with')
-	ap.add_argument('-l', '--lang', type=str, choices=['en', 'ru'], default='en', help='language to build a word in')
+	ap.add_argument('-l', '--lang', type=str, choices=['en', 'ru', 'de'], default='en', help='language to build a word in')
 	args = ap.parse_args()
 	main()
