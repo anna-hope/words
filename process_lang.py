@@ -32,16 +32,16 @@ def main():
     # get words and initial letters
     words, initial_letters = process_words(open(args.fn))
     lang_data['words'] = words
-    lang_data['letters'] = initial_letters
+    lang_data['initial_letters'] = initial_letters
     dump(lang_data)
     print('Got words, getting letters...')
     
     symbol_freqs = seq_freqs(words, 1)
     
-    # get all used symbols
-    symbols = [symbol for symbol in symbol_freqs if symbol != '-']
+    # get all symbols in the bank
+    all_symbols = [symbol for symbol in symbol_freqs]
     
-    lang_data['symbols'] = symbols
+    lang_data['all_symbols'] = all_symbols
     dump(lang_data)
     print('Got letters...')
     

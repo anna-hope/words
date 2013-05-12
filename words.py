@@ -169,7 +169,7 @@ def play(comp_first, lang_data):
         if cur_player == 'computer':
             # if it's first turn, we want the computer to pick a random letter, no thinking
             if sequence == '':
-                letter = random.choice(lang_data['letters'])
+                letter = random.choice(lang_data['initial_letters'])
             else:
                 letter, cur_words = pick_letter(sequence, cur_words)
                 if letter is None:
