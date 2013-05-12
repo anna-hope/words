@@ -3,11 +3,6 @@
 # a script to analyse frequencies of letter sequences in a word bank
 # (c) Anton Osten
 
-def get_words(input_data):
-    # weed out the extraneous data
-    words = [word.strip().casefold() for word in input_data if len(word) >= 4]
-    return words
-
 def seq_freqs(words, seq_length=4):
     sequences = []
     

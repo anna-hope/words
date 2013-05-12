@@ -2,7 +2,7 @@
 
 import sys, argparse
 import simplejson as json
-from langtools import get_words, seq_freqs
+from langtools import seq_freqs
 
 def dump(lang_data, filename=None):
     if filename is None:
@@ -10,23 +10,38 @@ def dump(lang_data, filename=None):
     file = open('{}.json'.format(filename), 'w')
     json.dump(lang_data, file)
     file.close()
+    
+def process_words(words):
+    new_words = []
+    initial_letters = []
+    
+    for word in words:
+        word = word.strip().casefold()
+        if len(word) >= 4:
+            new_words.append(word)
+            if word[0] not in initial_letters:
+                initial_letters.append(word[0])
+    
+    return new_words, initial_letters
 
 def main():
     print('Working...')
     # we'll be dumping everything into a JSON file along the way
     lang_data = {}
     
-    # get words
-    words = get_words(open(args.fn))
+    # get words and initial letters
+    words, initial_letters = process_words(open(args.fn))
     lang_data['words'] = words
+    lang_data['letters'] = initial_letters
     dump(lang_data)
     print('Got words, getting letters...')
     
-    letter_freqs = seq_freqs(words, 1)
-    # get the letters
-    letters = [letter for letter in letter_freqs if letter != '-']
+    symbol_freqs = seq_freqs(words, 1)
     
-    lang_data['letters'] = letters
+    # get all used symbols
+    symbols = [symbol for symbol in symbol_freqs if symbol != '-']
+    
+    lang_data['symbols'] = symbols
     dump(lang_data)
     print('Got letters...')
     
