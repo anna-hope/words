@@ -69,7 +69,8 @@ def pick_letter(sequence, words):
     matches = [word for word in words if word.startswith(sequence)]
     # but that would be too boring, wouldn't you say?
     # so let's add some randomness
-    random_matches = [word for word in matches if random.random() > random.random() or random.random() < random.random()]
+    # random_matches = [word for word in matches if random.random() > random.random() or random.random() < random.random()]
+    random_matches = matches
     # around 0.25 words will be thrown away like this
     if random_matches == []:
         return (None, None)
@@ -80,6 +81,9 @@ def pick_letter(sequence, words):
         good_matches = random_matches
 
     sorted_matches = sorted(good_matches, key=len, reverse=True)
+    
+    # the next bit would be good to use, but makes it very slow
+    
     # and then let's see that one of those matches won't lead us to a premature game over because there is a shorter full word
     # best_matches = []
     # for word in good_matches:
